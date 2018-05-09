@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Repository\ContentRepository;
+use App\Repository\ContentTwoRepository;
 use App\Service\HtmlPurifierService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,16 +15,24 @@ class SampleController extends Controller
     /**
      * @Route("/sent", name="sent", methods={"POST"})
      */
-    public function sent(Request $request, HtmlPurifierService $purifier)
+    public function sent(Request $request, HtmlPurifierService $purifier, ContentRepository $contentRepository)
     {
         $html = json_decode($request->getContent());
+        $data = $purifier->purifyHtml($html->html);
+        $result = $contentRepository->saveContent($data);
 
-        $purify = $purifier->purifyHtml($html->html);
+        return $result;
+    }
 
-        return new JsonResponse(
-            [
-                'html' => $purify
-            ]
-        );
+    /**
+     * @Route("/sent/two", name="sent-two", methods={"POST"})
+     */
+    public function sentTwo(Request $request, ContentTwoRepository $contentTwoRepository)
+    {
+        $html = json_decode($request->getContent());
+        $html = $html->html;
+        $result = $contentTwoRepository->saveContent($html);
+
+        return $result;
     }
 }
